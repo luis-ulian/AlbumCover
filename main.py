@@ -6,10 +6,11 @@ from PIL import Image
 import io
 import os
 import keyboard
+import subprocess
 
 light_to_dark = [" ",".","'","`","^",'"',",",":",";","I","l","!","i",">","<","~","+","_","-","?","]","[","}","{","1",")","(","|","\\","/","t","f","j","r","x","n","u","v","c","z","X","Y","U","J","C","L","Q","0","O","Z","m","w","q","p","d","b","k","h","a","o","*","#","M","W","&","8","%","B","@","$"]
 
-x_size = 80
+x_size = 100
 y_size = int(x_size/2)
 
 previous = None
@@ -20,8 +21,8 @@ async def get_media_info(previous):
         current = sessions.get_current_session()
         
         if not current:
-            print("no media found.")
-            return
+            await asyncio.sleep(1)
+            continue
 
         info = await current.try_get_media_properties_async()
 
@@ -45,10 +46,9 @@ async def get_media_info(previous):
         previous = info
         if keyboard.is_pressed('esc'):
             break
+        await asyncio.sleep(1)
 
             
-            
-
 async def print_album_cover(cover):
     image = Image.open(cover)
     image = image.resize([x_size,y_size])
@@ -68,6 +68,11 @@ def rgb_to_grayscale(R,G,B):
 def painted_char(R,G,B,char):
     return("\x1b[" + "38;2;" + str(R) + ";" + str(G) + ";" + str(B) + "m" + char + "\x1b[0m")
 
+subprocess.run(
+    ["cmd", "/c", "mode", "con:", f"cols={x_size}", f"lines={y_size + 2}"],
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL
+)
 asyncio.run(get_media_info(previous))
 
     
